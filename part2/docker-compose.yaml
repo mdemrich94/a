@@ -1,0 +1,115 @@
+services:
+  r1:
+    build: .
+    stdin_open: true
+    tty: true
+    cap_add:
+      - ALL
+    privileged: true
+    volumes:
+      - ./r1/entrypoint.sh:/entrypoint.sh
+
+    networks:
+      - net14_ha_r1
+      - net16_r1_r2
+      - net17_r1_r4
+  r2:
+    build: .
+    stdin_open: true
+    tty: true
+    cap_add:
+      - ALL
+    privileged: true
+    volumes:
+      - ./r2/entrypoint.sh:/entrypoint.sh
+
+    networks:        
+      - net16_r1_r2
+      - net18_r3_r2
+
+  r3:
+    build: .
+    stdin_open: true
+    tty: true
+    cap_add:
+      - ALL
+    privileged: true
+    volumes:
+      - ./r3/entrypoint.sh:/entrypoint.sh
+
+    networks:
+      - net15_hb_r3
+      - net18_r3_r2
+      - net19_r3_r4
+
+  r4:
+    build: .
+    stdin_open: true
+    tty: true
+    cap_add:
+      - ALL
+    privileged: true
+    volumes:
+      - ./r4/entrypoint.sh:/entrypoint.sh
+
+    networks:
+      - net17_r1_r4
+      - net19_r3_r4
+
+  ha:
+    build: .
+    stdin_open: true
+    tty: true
+    cap_add:
+      - ALL
+    privileged: true
+    volumes:
+      - ./ha/entrypoint.sh:/entrypoint.sh
+
+    networks:
+      - net14_ha_r1
+
+  hb:
+    build: .
+    stdin_open: true
+    tty: true
+    cap_add:
+      - ALL
+    privileged: true
+    volumes:
+      - ./hb/entrypoint.sh:/entrypoint.sh
+
+    networks:
+      - net15_hb_r3
+
+networks:
+  net14_ha_r1:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.14.0/24
+  net15_hb_r3:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.15.0/24
+  net16_r1_r2:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.16.0/24
+  net17_r1_r4:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.17.0/24
+  net18_r3_r2:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.18.0/24
+  net19_r3_r4:
+    ipam:
+      driver: default
+      config:
+        - subnet: 10.0.19.0/24

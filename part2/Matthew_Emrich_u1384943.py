@@ -3,22 +3,22 @@ import subprocess
 
 # Routers + OSPF config
 routers = {
-    "part1-r1-1": {
+    "r1": {
         "router_id": "192.168.1.1",
         "networks": ["10.0.14.0/24", "10.0.16.0/24", "10.0.17.0/24"],
         "interface_costs": {"eth0": 10, "eth1": 10, "eth2": 100}
     },
-    "part1-r2-1": {
+    "r2": {
         "router_id": "192.168.1.2",
         "networks": ["10.0.16.0/24", "10.0.18.0/24"],
         "interface_costs": {"eth0": 10, "eth1": 10}
     },
-    "part1-r3-1": {
+    "r3": {
         "router_id": "192.168.1.3",
         "networks": ["10.0.15.0/24", "10.0.18.0/24", "10.0.19.0/24"],
         "interface_costs": {"eth0": 10, "eth1": 10, "eth2": 100}
     },
-    "part1-r4-1": {
+    "r4": {
         "router_id": "192.168.1.4",
         "networks": ["10.0.17.0/24", "10.0.19.0/24"],
         "interface_costs": {"eth0": 100, "eth1": 100}
@@ -57,31 +57,31 @@ def switch_path(path):
 
     if path == "north":
         # Prefer R1 → R2 → R3
-        run_cmd("docker exec part1-r1-1 vtysh -c 'configure terminal' -c 'interface eth1' -c 'ip ospf cost 10' -c 'interface eth2' -c 'ip ospf cost 100' -c 'end' -c 'write memory'")
-        run_cmd("docker exec part1-r2-1 vtysh -c 'configure terminal' -c 'interface eth0' -c 'ip ospf cost 10' -c 'interface eth1' -c 'ip ospf cost 10' -c 'end' -c 'write memory'")
-        run_cmd("docker exec part1-r3-1 vtysh -c 'configure terminal' -c 'interface eth1' -c 'ip ospf cost 10' -c 'interface eth2' -c 'ip ospf cost 100' -c 'end' -c 'write memory'")
-        run_cmd("docker exec part1-r4-1 vtysh -c 'configure terminal' -c 'interface eth0' -c 'ip ospf cost 100' -c 'interface eth1' -c 'ip ospf cost 100' -c 'end' -c 'write memory'")
+        run_cmd("docker exec r1 vtysh -c 'configure terminal' -c 'interface eth1' -c 'ip ospf cost 10' -c 'interface eth2' -c 'ip ospf cost 100' -c 'end' -c 'write memory'")
+        run_cmd("docker exec r2 vtysh -c 'configure terminal' -c 'interface eth0' -c 'ip ospf cost 10' -c 'interface eth1' -c 'ip ospf cost 10' -c 'end' -c 'write memory'")
+        run_cmd("docker exec r3 vtysh -c 'configure terminal' -c 'interface eth1' -c 'ip ospf cost 10' -c 'interface eth2' -c 'ip ospf cost 100' -c 'end' -c 'write memory'")
+        run_cmd("docker exec r4 vtysh -c 'configure terminal' -c 'interface eth0' -c 'ip ospf cost 100' -c 'interface eth1' -c 'ip ospf cost 100' -c 'end' -c 'write memory'")
 
     elif path == "south":
         # Prefer R1 → R4 → R3
-        run_cmd("docker exec part1-r1-1 vtysh -c 'configure terminal' -c 'interface eth1' -c 'ip ospf cost 100' -c 'interface eth2' -c 'ip ospf cost 10' -c 'end' -c 'write memory'")
-        run_cmd("docker exec part1-r2-1 vtysh -c 'configure terminal' -c 'interface eth0' -c 'ip ospf cost 100' -c 'interface eth1' -c 'ip ospf cost 100' -c 'end' -c 'write memory'")
-        run_cmd("docker exec part1-r3-1 vtysh -c 'configure terminal' -c 'interface eth1' -c 'ip ospf cost 100' -c 'interface eth2' -c 'ip ospf cost 10' -c 'end' -c 'write memory'")
-        run_cmd("docker exec part1-r4-1 vtysh -c 'configure terminal' -c 'interface eth0' -c 'ip ospf cost 10' -c 'interface eth1' -c 'ip ospf cost 10' -c 'end' -c 'write memory'")
+        run_cmd("docker exec r1 vtysh -c 'configure terminal' -c 'interface eth1' -c 'ip ospf cost 100' -c 'interface eth2' -c 'ip ospf cost 10' -c 'end' -c 'write memory'")
+        run_cmd("docker exec r2 vtysh -c 'configure terminal' -c 'interface eth0' -c 'ip ospf cost 100' -c 'interface eth1' -c 'ip ospf cost 100' -c 'end' -c 'write memory'")
+        run_cmd("docker exec r3 vtysh -c 'configure terminal' -c 'interface eth1' -c 'ip ospf cost 100' -c 'interface eth2' -c 'ip ospf cost 10' -c 'end' -c 'write memory'")
+        run_cmd("docker exec r4 vtysh -c 'configure terminal' -c 'interface eth0' -c 'ip ospf cost 10' -c 'interface eth1' -c 'ip ospf cost 10' -c 'end' -c 'write memory'")
         
-    for router in ["part1-r1-1", "part1-r2-1", "part1-r3-1", "part1-r4-1"]:
+    for router in ["r1", "r2", "r3", "r4"]:
         run_cmd(f"docker exec {router} vtysh -c 'clear ip ospf process'")
 
 def install_host_routes():
     print("Installing host routes...")
 
     # Change HB default route
-    run_cmd("docker exec part1-hb-1 ip route del default || true")  # `|| true` avoids crash if default doesn't exist
-    run_cmd("docker exec part1-hb-1 ip route add default via 10.0.15.10")
+    run_cmd("docker exec hb ip route del default || true")  # `|| true` avoids crash if default doesn't exist
+    run_cmd("docker exec hb ip route add default via 10.0.15.10")
 
     # Change HA default route
-    run_cmd("docker exec part1-ha-1 ip route del default || true")
-    run_cmd("docker exec part1-ha-1 ip route add default via 10.0.14.20")
+    run_cmd("docker exec ha ip route del default || true")
+    run_cmd("docker exec ha ip route add default via 10.0.14.20")
 
 # === Main Entry ===
 if __name__ == "__main__":

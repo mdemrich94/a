@@ -18,9 +18,5 @@ RUN apt-get clean
 # Enable OSPF daemon
 RUN sed -i 's/^ospfd=no/ospfd=yes/' /etc/frr/daemons
 
-# Copy in the entrypoint script
-COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
-
 # Run the entrypoint
 ENTRYPOINT ["/entrypoint.sh"]
